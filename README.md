@@ -91,16 +91,3 @@ Changelog in 3.0.0:
 * Result storage in Sqlite
 
 
-Comments? Bugs? Requests?
-------------------------
-cmartorella@edge-security.com
-
-Updates:
---------
-https://github.com/laramies/theHarvester
-
-Thanks:
--------
-* John Matherly -  SHODAN project
-* Lee Baird for suggestions and bugs reporting
-* Ahmed Aboul Ela - subdomain names dictionary (big and small)
