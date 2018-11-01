@@ -19,8 +19,8 @@ class search_googleCSE:
         self.quantity = "10"
         self.limit = limit
         self.counter = 1
-        self.api_key = ""
-        self.cse_id = ""
+        self.api_key = "AIzaSyCAY1VNCHADdEM1rmnV4KQHVpQJwVoW5f0"
+        self.cse_id = "007211530319449650766:cfbg_prgjyo"
         self.lowRange = start 
         self.highRange = start+100
 

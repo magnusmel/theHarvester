@@ -19,19 +19,9 @@ from discovery import *
 from lib import htmlExport
 from lib import hostchecker
 
-print "\n \033[92m *******************************************************************"
-print "*                                                                 *"
-print "* | |_| |__   ___    /\  /\__ _ _ ____   _____  ___| |_ ___ _ __  *"
-print "* | __| '_ \ / _ \  / /_/ / _` | '__\ \ / / _ \/ __| __/ _ \ '__| *"
-print "* | |_| | | |  __/ / __  / (_| | |   \ V /  __/\__ \ ||  __/ |    *"
-print "*  \__|_| |_|\___| \/ /_/ \__,_|_|    \_/ \___||___/\__\___|_|    *"
-print "*                                                                 *"
-print "* TheHarvester Ver. 3.0.0                                         *"
-print "* Coded by Christian Martorella                                   *"
-print "* Edge-Security Research                                          *"
-print "* cmartorella@edge-security.com                                   *"
-print "*******************************************************************\033[94m\n\n"
+print "* Harvester Ver. 3.0.0   *"
 
+print "**************************"
 
 def usage():
 
@@ -42,7 +32,7 @@ def usage():
 
     print "Usage: theharvester options \n"
     print "       -d: Domain to search or company name"
-    print """       -b: data source: baidu, bing, bingapi, dogpile, google, googleCSE,
+    print """     -b: data source: baidu, bing, bingapi, dogpile, google, googleCSE,
                         googleplus, google-profiles, linkedin, pgp, twitter, vhost, 
                         virustotal, threatcrowd, crtsh, netcraft, yahoo, all\n"""
     print "       -s: start in result number X (default: 0)"
@@ -52,12 +42,13 @@ def usage():
     print "       -c: perform a DNS brute force for the domain name"
     print "       -t: perform a DNS TLD expansion discovery"
     print "       -e: use this DNS server"
+    print "       -o: use this to save output to txt files"
     print "       -p: port scan the detected hosts and check for Takeovers (80,443,22,21,8080)"
     print "       -l: limit the number of results to work with(bing goes from 50 to 50 results,"
     print "            google 100 to 100, and pgp doesn't use this option)"
     print "       -h: use SHODAN database to query discovered hosts"
     print "\nExamples:"
-    print "        " + comm + " -d microsoft.com -l 500 -b google -h myresults.html"
+    print "        " + comm + " -d microsoft.com -l 500 -h -b google -f myresults.html"
     print "        " + comm + " -d microsoft.com -b pgp"
     print "        " + comm + " -d microsoft -l 200 -b linkedin"
     print "        " + comm + " -d apple.com -b googleCSE -l 500 -s 300\n"
@@ -68,7 +59,7 @@ def start(argv):
         usage()
         sys.exit()
     try:
-        opts, args = getopt.getopt(argv, "l:d:b:s:vf:nhcpte:")
+        opts, args = getopt.getopt(argv, "l:o:d:b:s:vf:nhcpte:")
     except getopt.GetoptError:
         usage()
         sys.exit()
@@ -90,7 +81,9 @@ def start(argv):
     ports_scanning = False
     takeover_check = False
     limit = 500
+    outputfile = ""
     dnsserver = ""
+
     for opt, arg in opts:
         if opt == '-l':
             limit = int(arg)
@@ -102,6 +95,8 @@ def start(argv):
             virtual = "basic"
         elif opt == '-f':
             filename = arg
+        elif opt == '-o':
+            outputfile = arg
         elif opt == '-n':
             dnslookup = True
         elif opt == '-c':
@@ -122,6 +117,8 @@ def start(argv):
                 sys.exit()
             else:
                 pass
+    print("-o outputfile - ", outputfile)
+
     print "[-] Starting harvesting process for domain: " + word +  "\n" 
     if engine == "google":
         print "[-] Searching in Google:"
@@ -357,15 +354,21 @@ def start(argv):
         all_emails=sorted(set(all_emails))
     
     #Results############################################################
-    print("\n\033[1;32;40m Harvesting results")
+    print("\nHarvesting results")
     print "\n\n[+] Emails found:"
     print "------------------"
     if all_emails == []:
         print "No emails found"
     else:
         print "\n".join(all_emails)
+        print("creating harvest-emails.out")
+        filename = outputfile + '/' + 'harvest-emails.out'
+        fhand = open(filename, "w+") 
+        fhand.write(all_emails)
+        fhand.close()
+        print("Wrote to ", filename)
 
-    print("\033[1;33;40m \n[+] Hosts found in search engines:")
+    print("\n[+] Hosts found in search engines:")
     print "------------------------------------"
     if all_hosts == []:
         print "No hosts found"
@@ -373,7 +376,7 @@ def start(argv):
         total = len(all_hosts)
         print "\nTotal hosts: " + str(total) + "\n"
         all_hosts=sorted(set(all_hosts))
-        print "\033[94m[-] Resolving hostnames IPs...\033[1;33;40m \n "
+        print "Resolving hostnames IPs... \n "
         full_host = hostchecker.Checker(all_hosts)
         full = full_host.check()
         for host in full:
@@ -385,13 +388,20 @@ def start(argv):
                 else:
                     host_ip.append(ip.lower())
 
+        print("creating harvest-hosts.out")
+        filename = outputfile + '/' + 'harvest-hosts.out'
+        fhand = open(filename, "w+") 
+        fhand.write(all_hosts)
+        fhand.close()
+        print("Wrote to ", filename)
+
     #DNS Brute force####################################################
     dnsres = []
     if dnsbrute == True:
-        print "\n\033[94m[-] Starting DNS brute force: \033[1;33;40m"
+        print "\n[-] Starting DNS brute force: "
         a = dnssearch.dns_force(word, dnsserver, verbose=True)
         res = a.process()
-        print "\n\033[94m[-] Hosts found after DNS brute force:"
+        print "\nHosts found after DNS brute force:"
         print "---------------------------------------"
         for y in res:
             print y
@@ -403,7 +413,7 @@ def start(argv):
 
     #Port Scanning #################################################
     if ports_scanning == True:
-            print("\n\n\033[1;32;40m[-] Scanning ports (active):\n")
+            print("\n\n[-] Scanning ports (active):\n")
             for x in full:
                 host = x.split(':')[1]
                 domain = x.split(':')[0]
@@ -414,7 +424,7 @@ def start(argv):
                         scan = port_scanner.port_scan(host,ports)
                         openports = scan.process()
                         if len(openports) > 1:
-                                print "\t\033[91m Detected open ports: " + ','.join(str(e) for e in openports) +  "\033[1;32;40m"
+                                print "\t Detected open ports: " + ','.join(str(e) for e in openports) +  ""
                         takeover_check = 'True'
                         if takeover_check == 'True':
                             if len(openports) > 0:   
@@ -436,7 +446,7 @@ def start(argv):
             range[3] = "0/24"
             range = string.join(range, '.')
             if not analyzed_ranges.count(range):
-                print "\033[94m[-]Performing reverse lookup in : " + range + "\033[1;33;40m"
+                print "[-]Performing reverse lookup in : " + range + ""
                 a = dnssearch.dns_reverse(range, True)
                 a.list()
                 res = a.process()
@@ -483,13 +493,20 @@ def start(argv):
                 vhost.append(l + ":" + x)
                 full.append(l + ":" + x)
         vhost=sorted(set(vhost))
+
+        print("creating harvest-vhosts.out")
+        filename = outputfile + '/' + 'harvest-vhosts.out'
+        fhand = open(filename, "w+") 
+        fhand.write(vhost)
+        fhand.close()
+        print("Wrote to ", filename)
     else:
         pass
     #Shodan search####################################################
     shodanres = []
     shodanvisited = []
     if shodan == True:
-        print("\n\n\033[1;32;40m[-] Shodan DB search (passive):\n")
+        print("\n\n[-] Shodan DB search (passive):\n")
         for x in full:
             try:
                 ip = x.split(":")[1]
@@ -559,12 +576,14 @@ def start(argv):
                     file.write('<host>' + '<ip>' + x[0] + '</ip><hostname>' + x[1]  + '</hostname>' + '</host>')
                 else:
                     file.write('<host>' + x + '</host>')
+
             for x in vhost:
                 x = x.split(":")
                 if len(x) == 2:
                     file.write('<vhost>' + '<ip>' + x[0] + '</ip><hostname>' + x[1]  + '</hostname>' + '</vhost>')
                 else:
                     file.write('<vhost>' + x + '</vhost>')
+
 
             if shodanres != []:
                 shodanalysis = []
