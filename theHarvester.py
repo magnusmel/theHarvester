@@ -361,7 +361,7 @@ def start(argv):
         print "No emails found"
     else:
         print "\n".join(all_emails)
-        print("creating harvest-emails.out")
+        # print("creating harvest-emails.out")
         filename = outputfile + '/' + 'harvest-emails.out'
         fhand = open(filename, "w+") 
         fhand.write(all_emails)
@@ -388,7 +388,7 @@ def start(argv):
                 else:
                     host_ip.append(ip.lower())
 
-        print("creating harvest-hosts.out")
+        # print("creating harvest-hosts.out")
         filename = outputfile + '/' + 'harvest-hosts.out'
         fhand = open(filename, "w+") 
         fhand.write(all_hosts)
@@ -494,7 +494,7 @@ def start(argv):
                 full.append(l + ":" + x)
         vhost=sorted(set(vhost))
 
-        print("creating harvest-vhosts.out")
+        # print("creating harvest-vhosts.out")
         filename = outputfile + '/' + 'harvest-vhosts.out'
         fhand = open(filename, "w+") 
         fhand.write(vhost)
